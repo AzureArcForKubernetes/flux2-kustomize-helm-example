@@ -13,7 +13,7 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: flux-system
-      version: "9.x"
+      version: "9.11.0"
   interval: 1h0m0s
   install:
     remediation:
@@ -24,4 +24,52 @@ spec:
     service:
       type: NodePort
     image:
-      repository: bitnamilegacy/nginx-ingress-controller
+      registry: mcr.microsoft.com
+      repository: oss/kubernetes/ingress/nginx-ingress-controller
+      tag: v1.9.5
+      digest: sha256:0430dfccf7246f105b75ff2dfd0fb4550d56f129d70c8d790c5a6387ac1b240c
+    command:
+      - /usr/bin/dumb-init
+      - --
+      - /nginx-ingress-controller
+    podSecurityContext:
+      fsGroup: 101
+    containerSecurityContext:
+      runAsUser: 101
+    defaultBackend:
+      image:
+        registry: mcr.microsoft.com
+        repository: azurelinux/base/nginx
+        tag: 1.30.6-2-azl3.0.20261120
+        digest: sha256:fa5263ab1df7457b18332c5b334395d5f06b73de939549a9db8a335e32b03f74
+      command:
+        - nginx
+      args:
+        - -c
+        - /opt/bitnami/nginx/conf/bitnami/defaultBackend.conf
+        - -g
+        - daemon off;
+      # Use the chart's config mount directly; MCR does not run Bitnami's setup scripts.
+      serverBlockConfig: |-
+        pid /tmp/nginx.pid;
+        error_log /dev/stderr;
+        events {
+          worker_connections 512;
+        }
+        http {
+          access_log /dev/stdout;
+          client_body_temp_path /tmp/client_temp;
+          proxy_temp_path /tmp/proxy_temp;
+          fastcgi_temp_path /tmp/fastcgi_temp;
+          uwsgi_temp_path /tmp/uwsgi_temp;
+          scgi_temp_path /tmp/scgi_temp;
+          server {
+            listen 8080;
+            location /healthz {
+              return 200;
+            }
+            location / {
+              return 404;
+            }
+          }
+        }
