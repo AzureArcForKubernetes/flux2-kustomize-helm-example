@@ -1,8 +1,75 @@
 # Default values
 # https://github.com/bitnami/charts/blob/master/bitnami/redis/values.yaml
-usePassword: false
-cluster:
-  enabled: false
+architecture: replication
+auth:
+  enabled: true
+  usePasswordFiles: false
 master:
   persistence:
     enabled: false
+  # Bypass Bitnami-only startup scripts while retaining the chart's config and auth.
+  command:
+    - redis-server
+  args:
+    - /opt/bitnami/redis/mounted-etc/redis.conf
+    - --include
+    - /opt/bitnami/redis/mounted-etc/master.conf
+    - --port
+    - $(REDIS_PORT)
+    - --requirepass
+    - $(REDIS_PASSWORD)
+  livenessProbe:
+    enabled: false
+  # The chart's default liveness script requires awk, which this MCR image lacks.
+  customLivenessProbe:
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 6
+    successThreshold: 1
+    failureThreshold: 5
+    exec:
+      command:
+        - /bin/bash
+        - -ec
+        - |
+          export REDISCLI_AUTH="$REDIS_PASSWORD"
+          response="$(timeout -s 3 5 redis-cli -h localhost -p "$REDIS_PORT" ping)"
+          [[ "$response" == PONG || "$response" == LOADING* || "$response" == MASTERDOWN* ]]
+replica:
+  command:
+    - redis-server
+  args:
+    - /opt/bitnami/redis/mounted-etc/redis.conf
+    - --include
+    - /opt/bitnami/redis/mounted-etc/replica.conf
+    - --port
+    - $(REDIS_PORT)
+    - --replicaof
+    - $(REDIS_MASTER_HOST)
+    - $(REDIS_MASTER_PORT_NUMBER)
+    - --requirepass
+    - $(REDIS_PASSWORD)
+    - --masterauth
+    - $(REDIS_MASTER_PASSWORD)
+  livenessProbe:
+    enabled: false
+  customLivenessProbe:
+    initialDelaySeconds: 20
+    periodSeconds: 5
+    timeoutSeconds: 6
+    successThreshold: 1
+    failureThreshold: 5
+    exec:
+      command:
+        - /bin/bash
+        - -ec
+        - |
+          export REDISCLI_AUTH="$REDIS_PASSWORD"
+          response="$(timeout -s 3 5 redis-cli -h localhost -p "$REDIS_PORT" ping)"
+          [[ "$response" == PONG || "$response" == LOADING* || "$response" == MASTERDOWN* ]]
+          response="$(timeout -s 3 5 redis-cli -h "$REDIS_MASTER_HOST" -p "$REDIS_MASTER_PORT_NUMBER" ping)"
+          [[ "$response" == PONG || "$response" == LOADING* || "$response" == MASTERDOWN* ]]
+image:
+  registry: mcr.microsoft.com
+  repository: cbl-mariner/base/redis
+  tag: 6.2.20-1-cm2.0.20260311@sha256:607463becc60b14515e5370a7d2c7c68c4dbadb51b086a318abbbef2395c00be
