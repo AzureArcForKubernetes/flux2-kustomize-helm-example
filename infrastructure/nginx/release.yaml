@@ -13,7 +13,7 @@ spec:
         kind: HelmRepository
         name: bitnami
         namespace: cluster-config
-      version: "9.x"
+      version: "9.11.0"
   interval: 1h0m0s
   install:
     remediation:
@@ -23,3 +23,12 @@ spec:
   values:
     service:
       type: NodePort
+    image:
+      registry: azurearcfork8sdev.azurecr.io
+      repository: test-dependencies/bitnami/nginx-ingress-controller
+      tag: "1.9.5-debian-11-r3"
+    defaultBackend:
+      image:
+        registry: azurearcfork8sdev.azurecr.io
+        repository: test-dependencies/bitnami/nginx
+        tag: "1.25.3-debian-11-r4"
