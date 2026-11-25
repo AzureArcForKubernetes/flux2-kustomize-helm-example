@@ -7,4 +7,6 @@ master:
   persistence:
     enabled: false
 image:
-  repository: bitnamilegacy/redis
+  registry: azurearcfork8sdev.azurecr.io
+  repository: test-dependencies/bitnami/redis
+  tag: "6.2.7-debian-11-r11"
