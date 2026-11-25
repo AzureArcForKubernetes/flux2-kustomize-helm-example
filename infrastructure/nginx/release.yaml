@@ -25,10 +25,10 @@ spec:
       type: NodePort
     image:
       registry: azurearcfork8sdev.azurecr.io
-      repository: test-dependencies/bitnami/nginx-ingress-controller
+      repository: flux-test-dependencies/bitnami/nginx-ingress-controller
       tag: "1.9.5-debian-11-r3"
     defaultBackend:
       image:
         registry: azurearcfork8sdev.azurecr.io
-        repository: test-dependencies/bitnami/nginx
+        repository: flux-test-dependencies/bitnami/nginx
         tag: "1.25.3-debian-11-r4"
