@@ -6,3 +6,7 @@ cluster:
 master:
   persistence:
     enabled: false
+image:
+  registry: azurearcfork8sdev.azurecr.io
+  repository: flux-test-dependencies/bitnami/redis
+  tag: "6.2.7-debian-11-r11"
