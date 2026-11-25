@@ -4,4 +4,5 @@ metadata:
   name: bitnami
 spec:
   interval: 30m
-  url: https://charts.bitnami.com/bitnami
+  type: oci
+  url: oci://azurearcfork8sdev.azurecr.io/flux-test-dependencies/helm
